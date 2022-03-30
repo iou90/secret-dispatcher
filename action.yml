@@ -1,11 +1,16 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'secret-dispatcher'
+description: 'Dispatch secret to repos/owners'
+author: 'ButterCam'
 inputs:
-  milliseconds: # change this
+  token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'github token'
+  json-path:
+    required: true
+    description: 'relative json file path in your repository that uses this action. format: { "xxx_secret_name": "xxx_secret_value" }'
+  targets:
+    required: true
+    description: 'repository/organization list, example: org_xxx, XXX/repo_xxx'
 runs:
-  using: 'node16'
+  using: 'node12'
   main: 'dist/index.js'
