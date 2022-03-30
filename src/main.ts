@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {Octokit} from '@octokit/core'
 import fs from 'fs'
+import path from 'path'
 const sodium = require('tweetsodium')
 
 interface SecretData {
@@ -68,7 +69,10 @@ async function run(): Promise<void> {
   try {
     const token: string = core.getInput('token')
     const secretData: SecretData = JSON.parse(
-      fs.readFileSync(core.getInput('json-path'), 'utf8')
+      fs.readFileSync(
+        path.resolve(__dirname, core.getInput('json-path')),
+        'utf8'
+      )
     )
     const octokit = new Octokit({auth: token})
     const targets = core.getInput('targets').split(',')
