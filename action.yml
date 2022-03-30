@@ -1,6 +1,9 @@
 name: 'secret-dispatcher'
 description: 'Dispatch secret to repos/owners'
 author: 'ButterCam'
+branding:
+  icon: 'send'
+  color: 'blue'
 inputs:
   token:
     required: true
