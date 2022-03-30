@@ -60,10 +60,13 @@ const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0
 });
 const dispatchRepoSecret = (octokit, target, secretData) => __awaiter(void 0, void 0, void 0, function* () {
     const [owner, repo] = target.split('/');
+    console.log(owner, repo);
     const key = (yield octokit.request(`GET /repos/${owner}/${repo}/actions/secrets/public-key`)).data.key;
+    console.log('key: ', key);
     const promises = [];
     for (const [secret_name, value] of Object.entries(secretData)) {
         const encrypted_value = Buffer.from(sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))).toString('base64');
+        console.log('dispatch begin');
         promises.push(yield octokit.request(`PUT /repos/${owner}/${repo}/actions/secrets/${secret_name}`, {
             owner,
             repo,
