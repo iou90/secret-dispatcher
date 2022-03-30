@@ -7,7 +7,7 @@ inputs:
     description: 'github token'
   json-path:
     required: true
-    description: 'relative json file path in your repository that uses this action. format: { "xxx_secret_name": "xxx_secret_value" }'
+    description: 'relative json file path in your repository that uses this action. format: { "xxx_secret_name": "xxx_secret_value", ... }'
   targets:
     required: true
     description: 'repository/organization list, example: org_xxx, XXX/repo_xxx'
