@@ -25,7 +25,8 @@ const dispatchOrgSecret = async (
       octokit.request(`PUT /orgs/${org}/actions/secrets/${secret_name}`, {
         org,
         secret_name,
-        encrypted_value
+        encrypted_value,
+        visibility: 'all'
       })
     )
   }
