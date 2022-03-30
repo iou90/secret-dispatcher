@@ -40,16 +40,19 @@ const dispatchRepoSecret = async (
   secretData: SecretData
 ): Promise<void> => {
   const [owner, repo] = target.split('/')
+  console.log(owner, repo)
   const key: string = (
     await octokit.request(
       `GET /repos/${owner}/${repo}/actions/secrets/public-key`
     )
   ).data.key
+  console.log('key: ', key)
   const promises = []
   for (const [secret_name, value] of Object.entries(secretData)) {
     const encrypted_value = Buffer.from(
       sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))
     ).toString('base64')
+    console.log('dispatch begin')
     promises.push(
       await octokit.request(
         `PUT /repos/${owner}/${repo}/actions/secrets/${secret_name}`,
@@ -71,7 +74,10 @@ async function run(): Promise<void> {
     const token: string = core.getInput('token')
     const secretData: SecretData = JSON.parse(
       fs.readFileSync(
-        path.resolve(__dirname, core.getInput('json-path')),
+        path.join(
+          process.env.GITHUB_WORKSPACE as string,
+          core.getInput('json-path')
+        ),
         'utf8'
       )
     )

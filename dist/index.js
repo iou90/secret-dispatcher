@@ -51,7 +51,8 @@ const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0
         promises.push(octokit.request(`PUT /orgs/${org}/actions/secrets/${secret_name}`, {
             org,
             secret_name,
-            encrypted_value
+            encrypted_value,
+            visibility: 'all'
         }));
     }
     yield Promise.all(promises);
@@ -77,7 +78,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token');
-            const secretData = JSON.parse(fs_1.default.readFileSync(path_1.default.resolve(__dirname, core.getInput('json-path')), 'utf8'));
+            const secretData = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.env.GITHUB_WORKSPACE, core.getInput('json-path')), 'utf8'));
             const octokit = new core_1.Octokit({ auth: token });
             const targets = core.getInput('targets').split(',');
             for (const item of targets) {
