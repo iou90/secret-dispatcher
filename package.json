@@ -1,6 +1,6 @@
 {
   "name": "secret-dispatcher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Dispatch secret to repos/orgs",
   "main": "lib/main.js",
