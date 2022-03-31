@@ -27,7 +27,8 @@
     "@actions/core": "^1.6.0",
     "@octokit/auth-token": "^2.5.0",
     "@octokit/core": "^3.6.0",
-    "tweetsodium": "0.0.5"
+    "tweetsodium": "0.0.5",
+    "whatwg-url": "^11.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.10.5",
