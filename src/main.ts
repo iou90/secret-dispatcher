@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import {Octokit} from '@octokit/core'
+import {createTokenAuth} from '@octokit/auth-token'
 import fs from 'fs'
 import path from 'path'
 const sodium = require('tweetsodium')
@@ -81,7 +82,7 @@ async function run(): Promise<void> {
         'utf8'
       )
     )
-    const octokit = new Octokit({auth: token})
+    const octokit = new Octokit({auth: await createTokenAuth(token)()})
     const targets = core.getInput('targets').split(',')
     for (const item of targets) {
       const target = item.trim()
