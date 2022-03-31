@@ -86,9 +86,9 @@ async function run(): Promise<void> {
     for (const item of targets) {
       const target = item.trim()
       if (target.includes('/')) {
-        dispatchOrgSecret(octokit, target, secretData)
+        await dispatchOrgSecret(octokit, target, secretData)
       } else {
-        dispatchRepoSecret(octokit, target, secretData)
+        await dispatchRepoSecret(octokit, target, secretData)
       }
     }
   } catch (error) {
