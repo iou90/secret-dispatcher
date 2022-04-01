@@ -1,6 +1,6 @@
 # secret-dispatcher action
 
-This action dispatch secret to repos/orgs.
+This action dispatch secret to repos/orgs (the feature contains in paid github plans).
 
 ## Inputs
 
