@@ -40,7 +40,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const core_1 = __nccwpck_require__(6762);
-const auth_token_1 = __nccwpck_require__(334);
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const path_1 = __importDefault(__nccwpck_require__(5622));
 const sodium = __nccwpck_require__(7637);
@@ -83,10 +82,7 @@ function run() {
         try {
             const token = core.getInput('token');
             const secretData = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.env.GITHUB_WORKSPACE, core.getInput('json-path')), 'utf8'));
-            core.info(typeof token);
-            core.info((typeof token === 'string').toString());
-            const auth = (0, auth_token_1.createTokenAuth)(token);
-            const octokit = new core_1.Octokit({ auth: yield auth() });
+            const octokit = new core_1.Octokit({ auth: `token ${token}` });
             const targets = core.getInput('targets').split(',');
             for (const item of targets) {
                 const target = item.trim();
