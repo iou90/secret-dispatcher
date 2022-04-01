@@ -85,7 +85,8 @@ function run() {
             const secretData = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.env.GITHUB_WORKSPACE, core.getInput('json-path')), 'utf8'));
             core.info(typeof token);
             core.info((typeof token === 'string').toString());
-            const octokit = new core_1.Octokit({ auth: yield (0, auth_token_1.createTokenAuth)(token)() });
+            const auth = (0, auth_token_1.createTokenAuth)(token);
+            const octokit = new core_1.Octokit({ auth: yield auth() });
             const targets = core.getInput('targets').split(',');
             for (const item of targets) {
                 const target = item.trim();

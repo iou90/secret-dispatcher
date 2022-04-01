@@ -84,7 +84,8 @@ async function run(): Promise<void> {
     )
     core.info(typeof token)
     core.info((typeof token === 'string').toString())
-    const octokit = new Octokit({auth: await createTokenAuth(token)()})
+    const auth = createTokenAuth(token)
+    const octokit = new Octokit({auth: await auth()})
     const targets = core.getInput('targets').split(',')
     for (const item of targets) {
       const target = item.trim()
