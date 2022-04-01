@@ -43,38 +43,27 @@ const core_1 = __nccwpck_require__(6762);
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const path_1 = __importDefault(__nccwpck_require__(5622));
 const sodium = __nccwpck_require__(7637);
-const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0, void 0, function* () {
-    const { key, key_id } = (yield octokit.request(`GET /orgs/${org}/actions/secrets/public-key`)).data;
+const dispatchSecret = (octokit, publicKeyRequest, secretRequest, secretRequestExtraData, secretData, target) => __awaiter(void 0, void 0, void 0, function* () {
+    const { key, key_id } = (yield octokit.request(publicKeyRequest)).data;
     const promises = [];
     for (const [secret_name, value] of Object.entries(secretData)) {
         const encrypted_value = Buffer.from(sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))).toString('base64');
-        promises.push(octokit.request(`PUT /orgs/${org}/actions/secrets/${secret_name}`, {
-            org,
-            secret_name,
+        promises.push(octokit.request(`${secretRequest}/${secret_name}`, Object.assign(Object.assign({}, secretRequestExtraData), { secret_name,
             encrypted_value,
-            key_id,
-            visibility: 'all'
-        }));
-    }
-    yield Promise.all(promises);
-    core.info(`${org} secret dispatched`);
-});
-const dispatchRepoSecret = (octokit, target, secretData) => __awaiter(void 0, void 0, void 0, function* () {
-    const [owner, repo] = target.split('/');
-    const { key, key_id } = (yield octokit.request(`GET /repos/${owner}/${repo}/actions/secrets/public-key`)).data;
-    const promises = [];
-    for (const [secret_name, value] of Object.entries(secretData)) {
-        const encrypted_value = Buffer.from(sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))).toString('base64');
-        promises.push(yield octokit.request(`PUT /repos/${owner}/${repo}/actions/secrets/${secret_name}`, {
-            owner,
-            repo,
-            secret_name,
-            key_id,
-            encrypted_value
-        }));
+            key_id })));
     }
     yield Promise.all(promises);
     core.info(`${target} secret dispatched`);
+});
+const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0, void 0, function* () {
+    return dispatchSecret(octokit, `GET /orgs/${org}/actions/secrets/public-key`, `PUT /orgs/${org}/actions/secrets`, { org, visibility: 'all' }, secretData, org);
+});
+const dispatchRepoSecret = (octokit, target, secretData) => __awaiter(void 0, void 0, void 0, function* () {
+    const [owner, repo] = target.split('/');
+    dispatchSecret(octokit, `GET /repos/${owner}/${repo}/actions/secrets/public-key`, `PUT /repos/${owner}/${repo}/actions/secrets`, {
+        owner,
+        repo
+    }, secretData, target);
 });
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
