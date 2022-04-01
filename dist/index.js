@@ -83,7 +83,6 @@ function run() {
         try {
             const token = core.getInput('token');
             const secretData = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.env.GITHUB_WORKSPACE, core.getInput('json-path')), 'utf8'));
-            core.info(token);
             const octokit = new core_1.Octokit({ auth: yield (0, auth_token_1.createTokenAuth)(token)() });
             const targets = core.getInput('targets').split(',');
             for (const item of targets) {

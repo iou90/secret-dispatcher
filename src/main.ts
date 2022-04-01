@@ -82,7 +82,6 @@ async function run(): Promise<void> {
         'utf8'
       )
     )
-    core.info(token)
     const octokit = new Octokit({auth: await createTokenAuth(token)()})
     const targets = core.getInput('targets').split(',')
     for (const item of targets) {
