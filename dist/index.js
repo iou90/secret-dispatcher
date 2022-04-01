@@ -95,8 +95,10 @@ function run() {
             }
         }
         catch (error) {
-            if (error instanceof Error)
+            if (error instanceof Error) {
+                core.error(error);
                 core.setFailed(error.message);
+            }
         }
     });
 }
