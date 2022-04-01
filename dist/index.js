@@ -44,7 +44,7 @@ const fs_1 = __importDefault(__nccwpck_require__(5747));
 const path_1 = __importDefault(__nccwpck_require__(5622));
 const sodium = __nccwpck_require__(7637);
 const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0, void 0, function* () {
-    const key = (yield octokit.request(`GET /orgs/${org}/actions/secrets/public-key`)).data.key;
+    const { key, key_id } = (yield octokit.request(`GET /orgs/${org}/actions/secrets/public-key`)).data;
     const promises = [];
     for (const [secret_name, value] of Object.entries(secretData)) {
         const encrypted_value = Buffer.from(sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))).toString('base64');
@@ -52,6 +52,7 @@ const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0
             org,
             secret_name,
             encrypted_value,
+            key_id,
             visibility: 'all'
         }));
     }
@@ -60,17 +61,15 @@ const dispatchOrgSecret = (octokit, org, secretData) => __awaiter(void 0, void 0
 });
 const dispatchRepoSecret = (octokit, target, secretData) => __awaiter(void 0, void 0, void 0, function* () {
     const [owner, repo] = target.split('/');
-    core.info(`${owner}, ${repo}`);
-    const key = (yield octokit.request(`GET /repos/${owner}/${repo}/actions/secrets/public-key`)).data.key;
-    core.info(`key: , ${key}`);
+    const { key, key_id } = (yield octokit.request(`GET /repos/${owner}/${repo}/actions/secrets/public-key`)).data;
     const promises = [];
     for (const [secret_name, value] of Object.entries(secretData)) {
         const encrypted_value = Buffer.from(sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))).toString('base64');
-        core.info('dispatch begin');
         promises.push(yield octokit.request(`PUT /repos/${owner}/${repo}/actions/secrets/${secret_name}`, {
             owner,
             repo,
             secret_name,
+            key_id,
             encrypted_value
         }));
     }
@@ -82,11 +81,8 @@ function run() {
         try {
             const token = core.getInput('token');
             const secretData = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.env.GITHUB_WORKSPACE, core.getInput('json-path')), 'utf8'));
-            core.info(`test1`);
-            const octokit = new core_1.Octokit({ auth: `token ${token}` });
-            core.info(`test2`);
+            const octokit = new core_1.Octokit({ auth: token });
             const targets = core.getInput('targets').split(',');
-            core.info(`test3`);
             for (const item of targets) {
                 const target = item.trim();
                 if (target.includes('/')) {

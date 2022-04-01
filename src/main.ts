@@ -13,9 +13,9 @@ const dispatchOrgSecret = async (
   org: string,
   secretData: SecretData
 ): Promise<void> => {
-  const key: string = (
+  const {key, key_id} = (
     await octokit.request(`GET /orgs/${org}/actions/secrets/public-key`)
-  ).data.key
+  ).data
   const promises = []
   for (const [secret_name, value] of Object.entries(secretData)) {
     const encrypted_value = Buffer.from(
@@ -26,6 +26,7 @@ const dispatchOrgSecret = async (
         org,
         secret_name,
         encrypted_value,
+        key_id,
         visibility: 'all'
       })
     )
@@ -40,19 +41,16 @@ const dispatchRepoSecret = async (
   secretData: SecretData
 ): Promise<void> => {
   const [owner, repo] = target.split('/')
-  core.info(`${owner}, ${repo}`)
-  const key: string = (
+  const {key, key_id} = (
     await octokit.request(
       `GET /repos/${owner}/${repo}/actions/secrets/public-key`
     )
-  ).data.key
-  core.info(`key: , ${key}`)
+  ).data
   const promises = []
   for (const [secret_name, value] of Object.entries(secretData)) {
     const encrypted_value = Buffer.from(
       sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))
     ).toString('base64')
-    core.info('dispatch begin')
     promises.push(
       await octokit.request(
         `PUT /repos/${owner}/${repo}/actions/secrets/${secret_name}`,
@@ -60,6 +58,7 @@ const dispatchRepoSecret = async (
           owner,
           repo,
           secret_name,
+          key_id,
           encrypted_value
         }
       )
@@ -81,11 +80,8 @@ async function run(): Promise<void> {
         'utf8'
       )
     )
-    core.info(`test1`)
-    const octokit = new Octokit({auth: `token ${token}`})
-    core.info(`test2`)
+    const octokit = new Octokit({auth: token})
     const targets = core.getInput('targets').split(',')
-    core.info(`test3`)
     for (const item of targets) {
       const target = item.trim()
       if (target.includes('/')) {
