@@ -90,10 +90,10 @@ function run() {
             for (const item of targets) {
                 const target = item.trim();
                 if (target.includes('/')) {
-                    yield dispatchOrgSecret(octokit, target, secretData);
+                    yield dispatchRepoSecret(octokit, target, secretData);
                 }
                 else {
-                    yield dispatchRepoSecret(octokit, target, secretData);
+                    yield dispatchOrgSecret(octokit, target, secretData);
                 }
             }
         }
