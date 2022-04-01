@@ -8,32 +8,56 @@ interface SecretData {
   [key: string]: string
 }
 
-const dispatchOrgSecret = async (
+interface OrgRequestExtraData {
+  org: string
+  visibility: string
+}
+
+interface RepoRequestExtraData {
+  owner: string
+  repo: string
+}
+
+const dispatchSecret = async (
   octokit: Octokit,
-  org: string,
-  secretData: SecretData
+  publicKeyRequest: string,
+  secretRequest: string,
+  secretRequestExtraData: OrgRequestExtraData | RepoRequestExtraData,
+  secretData: SecretData,
+  target: string
 ): Promise<void> => {
-  const {key, key_id} = (
-    await octokit.request(`GET /orgs/${org}/actions/secrets/public-key`)
-  ).data
+  const {key, key_id} = (await octokit.request(publicKeyRequest)).data
   const promises = []
   for (const [secret_name, value] of Object.entries(secretData)) {
     const encrypted_value = Buffer.from(
       sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))
     ).toString('base64')
     promises.push(
-      octokit.request(`PUT /orgs/${org}/actions/secrets/${secret_name}`, {
-        org,
+      octokit.request(`${secretRequest}/${secret_name}`, {
+        ...secretRequestExtraData,
         secret_name,
         encrypted_value,
-        key_id,
-        visibility: 'all'
+        key_id
       })
     )
   }
   await Promise.all(promises)
-  core.info(`${org} secret dispatched`)
+  core.info(`${target} secret dispatched`)
 }
+
+const dispatchOrgSecret = async (
+  octokit: Octokit,
+  org: string,
+  secretData: SecretData
+): Promise<void> =>
+  dispatchSecret(
+    octokit,
+    `GET /orgs/${org}/actions/secrets/public-key`,
+    `PUT /orgs/${org}/actions/secrets`,
+    {org, visibility: 'all'},
+    secretData,
+    org
+  )
 
 const dispatchRepoSecret = async (
   octokit: Octokit,
@@ -41,31 +65,17 @@ const dispatchRepoSecret = async (
   secretData: SecretData
 ): Promise<void> => {
   const [owner, repo] = target.split('/')
-  const {key, key_id} = (
-    await octokit.request(
-      `GET /repos/${owner}/${repo}/actions/secrets/public-key`
-    )
-  ).data
-  const promises = []
-  for (const [secret_name, value] of Object.entries(secretData)) {
-    const encrypted_value = Buffer.from(
-      sodium.seal(Buffer.from(value), Buffer.from(key, 'base64'))
-    ).toString('base64')
-    promises.push(
-      await octokit.request(
-        `PUT /repos/${owner}/${repo}/actions/secrets/${secret_name}`,
-        {
-          owner,
-          repo,
-          secret_name,
-          key_id,
-          encrypted_value
-        }
-      )
-    )
-  }
-  await Promise.all(promises)
-  core.info(`${target} secret dispatched`)
+  dispatchSecret(
+    octokit,
+    `GET /repos/${owner}/${repo}/actions/secrets/public-key`,
+    `PUT /repos/${owner}/${repo}/actions/secrets`,
+    {
+      owner,
+      repo
+    },
+    secretData,
+    target
+  )
 }
 
 async function run(): Promise<void> {
