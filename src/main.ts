@@ -81,8 +81,11 @@ async function run(): Promise<void> {
         'utf8'
       )
     )
+    core.info(`test1`)
     const octokit = new Octokit({auth: `token ${token}`})
+    core.info(`test2`)
     const targets = core.getInput('targets').split(',')
+    core.info(`test3`)
     for (const item of targets) {
       const target = item.trim()
       if (target.includes('/')) {
